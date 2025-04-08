@@ -1,15 +1,25 @@
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { readFile } from "fs/promises";
+import path from "path";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function openDb() {
     try {
-        const __dirname = dirname(fileURLToPath(import.meta.url));
+        let dbPath;
+
+        if (process.env.NODE_ENV === "test") {
+            dbPath = path.join(__dirname,"database_test.db");
+        } else {
+            dbPath = path.join(__dirname, "database.db");
+        }
+
         const db = await open({
-            filename: join(__dirname, "database.db"),
+            filename: dbPath,
             driver: sqlite3.Database,
         });
         await initDb(db);
