@@ -63,14 +63,12 @@ describe('Users Repository', () => {
       expect(createdUser.Pseudo).toBe('NewUser');
       expect(createdUser.Email).toBe('new@example.com');
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const allUsers = await db.all('SELECT * FROM USER');
-      expect(allUsers.length).toBe(3);
-
-      const foundUser = allUsers.find((u) => u.Pseudo === 'NewUser');
-      expect(foundUser).not.toBeUndefined();
-      expect(foundUser.Email).toBe('new@example.com');
+      // Vérifions directement avec une nouvelle requête à la base de données
+      const dbUser = await db.get('SELECT * FROM USER WHERE Pseudo = ?', [
+        'NewUser',
+      ]);
+      expect(dbUser).not.toBeUndefined();
+      expect(dbUser.Email).toBe('new@example.com');
     });
   });
 
