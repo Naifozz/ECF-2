@@ -24,7 +24,9 @@ export async function openDb() {
       driver: sqlite3.Database,
     });
     await initDb(db);
-    await seedDatabase(db);
+    if (process.env.NODE_ENV !== 'test') {
+      await seedDatabase(db);
+    }
     return db;
   } catch (error) {
     throw new Error('Failed to open database: ' + error.message);
