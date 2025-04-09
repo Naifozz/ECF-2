@@ -1,5 +1,5 @@
 import express from 'express';
-import { getInventoryByUserId } from '../repositories/inventoryRepository';
+import { getInventoryByUserId } from '../controllers/inventoryController.js';
 
 const router = express.Router();
 
