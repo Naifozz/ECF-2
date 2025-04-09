@@ -7,13 +7,14 @@ CREATE TABLE IF NOT EXISTS `USER` (
 
 CREATE TABLE IF NOT EXISTS `INVENTORY` (
   `ID_Inventory` integer PRIMARY KEY autoincrement,
-  `ID_User` integer,
+  `ID_User` integer UNIQUE,
   FOREIGN KEY (`ID_User`) REFERENCES `USER` (`ID_User`)
 );
 
 CREATE TABLE IF NOT EXISTS `ITEM` (
   `ID_Item` integer PRIMARY KEY autoincrement,
-  `Name` varchar(255)
+  `Name` varchar(255),
+  `Image_Path` varchar(255)
 );
 
 CREATE TABLE IF NOT EXISTS `ITEM_INV` (
@@ -27,16 +28,16 @@ CREATE TABLE IF NOT EXISTS `ITEM_INV` (
 
 CREATE TABLE IF NOT EXISTS `RECIPE` (
   `ID_Recipe` integer PRIMARY KEY autoincrement,
-  `ID_Item_Result` integer,
+  `ID_Item_Result` integer UNIQUE,
   FOREIGN KEY (`ID_Item_Result`) REFERENCES `ITEM` (`ID_Item`)
 );
 
 CREATE TABLE IF NOT EXISTS `ITEM_RECIPE` (
+  `ID_Item_Recipe` integer PRIMARY KEY autoincrement,
   `ID_Recipe` integer,
   `ID_Item` integer,
   `position_x` integer,
   `position_y` integer,
-  PRIMARY KEY (`ID_Recipe`, `ID_Item`),
   FOREIGN KEY (`ID_Recipe`) REFERENCES `RECIPE` (`ID_Recipe`),
   FOREIGN KEY (`ID_Item`) REFERENCES `ITEM` (`ID_Item`)
 );
