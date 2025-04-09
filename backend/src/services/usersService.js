@@ -1,4 +1,5 @@
 import * as userRepository from '../repositories/usersRepository.js';
+import * as inventoryRepository from '../repositories/inventoryRepository.js';
 import { validateUser } from '../models/usersModel.js';
 export const getUsers = async () => {
   try {
@@ -31,6 +32,7 @@ export const createUser = async (data) => {
     }
     const user = await userRepository.createUser(data);
 
+    await inventoryRepository.createInventory(user.ID_User);
     return user;
   } catch (error) {
     console.error('Error creating user', error);
@@ -63,6 +65,8 @@ export const deleteUser = async (id) => {
       throw { status: 404, message: `Utilisateur avec l'ID ${id} introuvable` };
     }
     const user = await userRepository.deleteUser(id);
+
+    await inventoryRepository.deleteInventoryByUserId(id);
     return user;
   } catch (error) {
     console.error('Error deleting user', error);
