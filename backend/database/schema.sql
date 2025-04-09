@@ -36,8 +36,7 @@ CREATE TABLE IF NOT EXISTS `ITEM_RECIPE` (
   `ID_Item_Recipe` integer PRIMARY KEY autoincrement,
   `ID_Recipe` integer,
   `ID_Item` integer,
-  `position_x` integer,
-  `position_y` integer,
+  `Position` integer,
   FOREIGN KEY (`ID_Recipe`) REFERENCES `RECIPE` (`ID_Recipe`),
   FOREIGN KEY (`ID_Item`) REFERENCES `ITEM` (`ID_Item`)
 );
