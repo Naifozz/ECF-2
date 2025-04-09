@@ -66,7 +66,7 @@ describe('Users Repository', () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const allUsers = await db.all('SELECT * FROM USER');
-      expect(allUsers.length).toBeGreaterThanOrEqual(2);
+      expect(allUsers.length).toBe(3);
 
       const foundUser = allUsers.find((u) => u.Pseudo === 'NewUser');
       expect(foundUser).not.toBeUndefined();
