@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as inventoryController from '../../src/controllers/inventoryController.js';
 import * as inventoryService from '../../src/services/inventoryService.js';
 
-// Mock du service
 vi.mock('../../src/services/inventoryService.js');
 
 describe('Inventory Controller', () => {
@@ -13,7 +12,6 @@ describe('Inventory Controller', () => {
   beforeEach(() => {
     vi.resetAllMocks();
 
-    // Mock de req et res
     req = {
       params: {},
     };
@@ -26,7 +24,6 @@ describe('Inventory Controller', () => {
 
   describe('getInventoryByUserId', () => {
     it("✅ doit retourner un status 200 avec l'inventaire de l'utilisateur", async () => {
-      // Arrange
       const mockInventory = [
         {
           ID_Inventory: 1,
@@ -41,17 +38,14 @@ describe('Inventory Controller', () => {
       req.params.userId = '1';
       inventoryService.getInventoryByUserId.mockResolvedValue(mockInventory);
 
-      // Act
       await inventoryController.getInventoryByUserId(req, res);
 
-      // Assert
       expect(inventoryService.getInventoryByUserId).toHaveBeenCalledWith('1');
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockInventory);
     });
 
     it("❌ doit retourner le status d'erreur et le message si le service lance une erreur", async () => {
-      // Arrange
       const mockError = {
         status: 404,
         message: "Inventaire pour l'utilisateur 999 introuvable",
@@ -60,26 +54,21 @@ describe('Inventory Controller', () => {
       req.params.userId = '999';
       inventoryService.getInventoryByUserId.mockRejectedValue(mockError);
 
-      // Act
       await inventoryController.getInventoryByUserId(req, res);
 
-      // Assert
       expect(inventoryService.getInventoryByUserId).toHaveBeenCalledWith('999');
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({ message: mockError.message });
     });
 
     it('❌ doit retourner le status 500 si le service lance une erreur sans status', async () => {
-      // Arrange
       const mockError = new Error('Erreur interne');
 
       req.params.userId = '1';
       inventoryService.getInventoryByUserId.mockRejectedValue(mockError);
 
-      // Act
       await inventoryController.getInventoryByUserId(req, res);
 
-      // Assert
       expect(inventoryService.getInventoryByUserId).toHaveBeenCalledWith('1');
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ message: mockError.message });
