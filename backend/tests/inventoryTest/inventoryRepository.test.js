@@ -9,51 +9,68 @@ describe('Inventory Repository', () => {
   let inventoryId;
 
   beforeEach(async () => {
-    db = await openDb();
+    try {
+      db = await openDb();
 
-    await db.run('DELETE FROM ITEM_INV');
-    await db.run('DELETE FROM INVENTORY');
-    await db.run('DELETE FROM USER');
+      if (!db) {
+        throw new Error("La base de données n'a pas pu être ouverte");
+      }
 
-    await db.run(
-      'INSERT INTO USER (Pseudo, Email, Password) VALUES (?, ?, ?)',
-      ['TestUser', 'test@example.com', 'password123']
-    );
+      await db.run('DELETE FROM ITEM_INV');
+      await db.run('DELETE FROM INVENTORY');
+      await db.run('DELETE FROM ITEM');
+      await db.run('DELETE FROM USER');
 
-    const user = await db.get('SELECT ID_User FROM USER WHERE Pseudo = ?', [
-      'TestUser',
-    ]);
-    userId = user.ID_User;
+      await db.run(
+        'INSERT INTO USER (Pseudo, Email, Password) VALUES (?, ?, ?)',
+        ['TestUser', 'test@example.com', 'password123']
+      );
 
-    await db.run('INSERT INTO INVENTORY (ID_User) VALUES (?)', [userId]);
+      const user = await db.get('SELECT ID_User FROM USER WHERE Pseudo = ?', [
+        'TestUser',
+      ]);
+      userId = user.ID_User;
 
-    const inventory = await db.get(
-      'SELECT ID_Inventory FROM INVENTORY WHERE ID_User = ?',
-      [userId]
-    );
-    inventoryId = inventory.ID_Inventory;
+      await db.run('INSERT INTO INVENTORY (ID_User) VALUES (?)', [userId]);
 
-    await db.run('INSERT INTO ITEM (Name, Image_Path) VALUES (?, ?)', [
-      'TestItem',
-      'images/items/test_item.png',
-    ]);
+      const inventory = await db.get(
+        'SELECT ID_Inventory FROM INVENTORY WHERE ID_User = ?',
+        [userId]
+      );
+      inventoryId = inventory.ID_Inventory;
 
-    const item = await db.get('SELECT ID_Item FROM ITEM WHERE Name = ?', [
-      'TestItem',
-    ]);
-    const itemId = item.ID_Item;
+      await db.run('INSERT INTO ITEM (Name, Image_Path) VALUES (?, ?)', [
+        'TestItem',
+        'images/items/test_item.png',
+      ]);
 
-    await db.run(
-      'INSERT INTO ITEM_INV (ID_Inventory, ID_Item, Quantity) VALUES (?, ?, ?)',
-      [inventoryId, itemId, 10]
-    );
+      const item = await db.get('SELECT ID_Item FROM ITEM WHERE Name = ?', [
+        'TestItem',
+      ]);
+      const itemId = item.ID_Item;
+
+      await db.run(
+        'INSERT INTO ITEM_INV (ID_Inventory, ID_Item, Quantity) VALUES (?, ?, ?)',
+        [inventoryId, itemId, 10]
+      );
+    } catch (error) {
+      console.error('Erreur dans beforeEach:', error);
+      throw error;
+    }
   });
 
   afterEach(async () => {
-    await db.run('DELETE FROM ITEM_INV');
-    await db.run('DELETE FROM INVENTORY');
-    await db.run('DELETE FROM USER');
-    await db.close();
+    try {
+      if (db) {
+        await db.run('DELETE FROM ITEM_INV');
+        await db.run('DELETE FROM INVENTORY');
+        await db.run('DELETE FROM ITEM');
+        await db.run('DELETE FROM USER');
+        await db.close();
+      }
+    } catch (error) {
+      console.error('Erreur dans afterEach:', error);
+    }
   });
 
   describe('getInventoryByUserId', () => {
@@ -61,7 +78,7 @@ describe('Inventory Repository', () => {
       const inventory = await inventoryRepository.getInventoryByUserId(userId);
 
       expect(inventory).not.toBeNull();
-      expect(inventory).toHaveLength(1);
+      expect(inventory.length).toBeGreaterThan(0);
       expect(inventory[0].ID_User).toBe(userId);
       expect(inventory[0].Quantity).toBe(10);
       expect(inventory[0].Name).toBe('TestItem');

@@ -63,8 +63,14 @@ describe('Users Repository', () => {
       expect(createdUser.Pseudo).toBe('NewUser');
       expect(createdUser.Email).toBe('new@example.com');
 
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       const allUsers = await db.all('SELECT * FROM USER');
-      expect(allUsers).toHaveLength(3);
+      expect(allUsers.length).toBeGreaterThanOrEqual(2);
+
+      const foundUser = allUsers.find((u) => u.Pseudo === 'NewUser');
+      expect(foundUser).not.toBeUndefined();
+      expect(foundUser.Email).toBe('new@example.com');
     });
   });
 

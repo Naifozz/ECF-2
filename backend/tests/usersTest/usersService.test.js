@@ -2,9 +2,11 @@ process.env.NODE_ENV = 'test';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as userService from '../../src/services/usersService.js';
 import * as userRepository from '../../src/repositories/usersRepository.js';
+import * as inventoryRepository from '../../src/repositories/inventoryRepository.js';
 import { validateUser } from '../../src/models/usersModel.js';
 
 vi.mock('../../src/repositories/usersRepository.js');
+vi.mock('../../src/repositories/inventoryRepository.js');
 vi.mock('../../src/models/usersModel.js');
 
 describe('Users Service', () => {
@@ -84,10 +86,17 @@ describe('Users Service', () => {
       const createdUser = { ID_User: 3, ...userData };
       userRepository.createUser.mockResolvedValue(createdUser);
 
+      inventoryRepository.createInventory.mockResolvedValue({
+        ID_Inventory: 1,
+        ID_User: 3,
+      });
+
       const result = await userService.createUser(userData);
       expect(result).toEqual(createdUser);
       expect(validateUser).toHaveBeenCalledWith(userData);
       expect(userRepository.createUser).toHaveBeenCalledWith(userData);
+
+      expect(inventoryRepository.createInventory).toHaveBeenCalledTimes(1);
     });
 
     it('❌ doit lancer une erreur pour des données invalides', async () => {
@@ -118,6 +127,7 @@ describe('Users Service', () => {
       );
 
       expect(userRepository.createUser).not.toHaveBeenCalled();
+      expect(inventoryRepository.createInventory).not.toHaveBeenCalled();
     });
   });
 
@@ -206,9 +216,14 @@ describe('Users Service', () => {
       });
       userRepository.deleteUser.mockResolvedValue(1);
 
+      inventoryRepository.deleteInventoryByUserId.mockResolvedValue(1);
+
       const result = await userService.deleteUser(1);
       expect(result).toBe(1);
       expect(userRepository.getUserById).toHaveBeenCalledWith(1);
+      expect(inventoryRepository.deleteInventoryByUserId).toHaveBeenCalledWith(
+        1
+      );
       expect(userRepository.deleteUser).toHaveBeenCalledWith(1);
     });
 
@@ -223,6 +238,9 @@ describe('Users Service', () => {
       );
 
       expect(userRepository.deleteUser).not.toHaveBeenCalled();
+      expect(
+        inventoryRepository.deleteInventoryByUserId
+      ).not.toHaveBeenCalled();
     });
   });
 });
