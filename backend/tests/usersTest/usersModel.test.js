@@ -1,6 +1,11 @@
 process.env.NODE_ENV = 'test';
 import { describe, it, expect } from 'vitest';
-import { isValidEmail, validateUser } from '../../src/models/usersModel.js';
+import {
+  isValidEmail,
+  validateUser,
+  hashPassword,
+  comparePassword,
+} from '../../src/models/usersModel.js';
 
 describe('isValidEmail', () => {
   it('✅ retourne true pour un email valide', () => {
@@ -163,5 +168,42 @@ describe('validateUser', () => {
     expect(result.errors).toContain(
       'Le mot de passe doit contenir au moins 6 caractères'
     );
+  });
+});
+
+describe('hashPassword', () => {
+  it('✅ doit hasher un mot de passe', async () => {
+    const password = 'monMotDePasse123';
+    const hashedPassword = await hashPassword(password);
+
+    expect(hashedPassword).not.toBe(password);
+    expect(hashedPassword).toMatch(/^\$2[aby]\$\d+\$/);
+  });
+
+  it('✅ doit générer des hashs différents pour le même mot de passe', async () => {
+    const password = 'monMotDePasse123';
+    const hash1 = await hashPassword(password);
+    const hash2 = await hashPassword(password);
+
+    expect(hash1).not.toBe(hash2);
+  });
+});
+
+describe('comparePassword', () => {
+  it('✅ doit retourner true quand le mot de passe correspond au hash', async () => {
+    const password = 'monMotDePasse123';
+    const hashedPassword = await hashPassword(password);
+
+    const result = await comparePassword(password, hashedPassword);
+    expect(result).toBe(true);
+  });
+
+  it('❌ doit retourner false quand le mot de passe ne correspond pas au hash', async () => {
+    const password = 'monMotDePasse123';
+    const wrongPassword = 'mauvaisMotDePasse';
+    const hashedPassword = await hashPassword(password);
+
+    const result = await comparePassword(wrongPassword, hashedPassword);
+    expect(result).toBe(false);
   });
 });

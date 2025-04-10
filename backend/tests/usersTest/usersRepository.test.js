@@ -72,6 +72,26 @@ describe('Users Repository', () => {
     });
   });
 
+  describe('getUserByEmail', () => {
+    it('✅ doit retourner un utilisateur par son email', async () => {
+      const allUsers = await db.all('SELECT * FROM USER');
+      const userEmail = allUsers[0].Email;
+
+      const user = await userRepository.getUserByEmail(userEmail);
+      expect(user).not.toBeNull();
+      expect(user.Pseudo).toBe('TestUser1');
+    });
+
+    it('❌ doit retourner undefined pour un email inexistant', async () => {
+      const allUsers = await db.all('SELECT * FROM USER');
+      const userEmail = allUsers[0].Email;
+
+      const user = await userRepository.getUserByEmail(
+        userEmail + 'nonexistent'
+      );
+      expect(user).toBeUndefined();
+    });
+  });
   describe('updateUser', () => {
     it('✅ doit mettre à jour un utilisateur existant', async () => {
       const allUsers = await db.all('SELECT * FROM USER');

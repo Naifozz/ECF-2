@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as userService from '../../src/services/usersService.js';
 import * as userRepository from '../../src/repositories/usersRepository.js';
 import * as inventoryRepository from '../../src/repositories/inventoryRepository.js';
-import { validateUser } from '../../src/models/usersModel.js';
+import { validateUser, hashPassword } from '../../src/models/usersModel.js';
 
 vi.mock('../../src/repositories/usersRepository.js');
 vi.mock('../../src/repositories/inventoryRepository.js');
@@ -81,9 +81,18 @@ describe('Users Service', () => {
         Password: 'password123',
       };
 
-      validateUser.mockReturnValue({ isValid: true, errors: [] });
+      const hashedPassword = 'hashed_password123';
 
-      const createdUser = { ID_User: 3, ...userData };
+      validateUser.mockReturnValue({ isValid: true, errors: [] });
+      userRepository.getUserByEmail.mockResolvedValue(null);
+      hashPassword.mockResolvedValue(hashedPassword);
+
+      const createdUser = {
+        ID_User: 3,
+        Pseudo: 'NewUser',
+        Email: 'new@example.com',
+        Password: hashedPassword,
+      };
       userRepository.createUser.mockResolvedValue(createdUser);
 
       inventoryRepository.createInventory.mockResolvedValue({
@@ -92,11 +101,24 @@ describe('Users Service', () => {
       });
 
       const result = await userService.createUser(userData);
-      expect(result).toEqual(createdUser);
-      expect(validateUser).toHaveBeenCalledWith(userData);
-      expect(userRepository.createUser).toHaveBeenCalledWith(userData);
 
-      expect(inventoryRepository.createInventory).toHaveBeenCalledTimes(1);
+      // Vérifier que le password n'est pas retourné
+      expect(result).toEqual({
+        ID_User: 3,
+        Pseudo: 'NewUser',
+        Email: 'new@example.com',
+      });
+
+      expect(validateUser).toHaveBeenCalledWith(userData);
+      expect(userRepository.getUserByEmail).toHaveBeenCalledWith(
+        'new@example.com'
+      );
+      expect(hashPassword).toHaveBeenCalledWith('password123');
+      expect(userRepository.createUser).toHaveBeenCalledWith({
+        ...userData,
+        Password: hashedPassword,
+      });
+      expect(inventoryRepository.createInventory).toHaveBeenCalledWith(3);
     });
 
     it('❌ doit lancer une erreur pour des données invalides', async () => {
@@ -126,6 +148,34 @@ describe('Users Service', () => {
         })
       );
 
+      expect(userRepository.getUserByEmail).not.toHaveBeenCalled();
+      expect(hashPassword).not.toHaveBeenCalled();
+      expect(userRepository.createUser).not.toHaveBeenCalled();
+      expect(inventoryRepository.createInventory).not.toHaveBeenCalled();
+    });
+
+    it("❌ doit lancer une erreur si l'email existe déjà", async () => {
+      const userData = {
+        Pseudo: 'NewUser',
+        Email: 'existing@example.com',
+        Password: 'password123',
+      };
+
+      validateUser.mockReturnValue({ isValid: true, errors: [] });
+      userRepository.getUserByEmail.mockResolvedValue({
+        ID_User: 5,
+        Pseudo: 'ExistingUser',
+        Email: 'existing@example.com',
+      });
+
+      await expect(userService.createUser(userData)).rejects.toEqual(
+        expect.objectContaining({
+          status: 400,
+          message: 'Cet email est déjà utilisé',
+        })
+      );
+
+      expect(hashPassword).not.toHaveBeenCalled();
       expect(userRepository.createUser).not.toHaveBeenCalled();
       expect(inventoryRepository.createInventory).not.toHaveBeenCalled();
     });
