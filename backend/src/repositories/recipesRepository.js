@@ -26,13 +26,11 @@ export async function getRecipesWithIngredients() {
 export async function getRecipeWithIngredients(id) {
   const db = await openDb();
 
-  // Vérifier si la recette existe
   const recipe = await db.get('SELECT * FROM RECIPE WHERE ID_Recipe = ?', [id]);
   if (!recipe) {
     return undefined;
   }
 
-  // Récupérer les informations du résultat (l'item résultant)
   const resultItem = await db.get(
     `SELECT i.* 
      FROM RECIPE r
@@ -41,7 +39,6 @@ export async function getRecipeWithIngredients(id) {
     [id]
   );
 
-  // Récupérer les ingrédients
   const ingredients = await db.all(
     `SELECT ir.ID_Item, ir.Position, i.Name, i.Image_Path 
      FROM ITEM_RECIPE ir
@@ -51,7 +48,6 @@ export async function getRecipeWithIngredients(id) {
     [id]
   );
 
-  // Formater le résultat selon la structure attendue
   return {
     ID_Recipe: recipe.ID_Recipe,
     ID_Item_Result: recipe.ID_Item_Result,
@@ -68,7 +64,6 @@ export async function createRecipe(recipe) {
   );
   const recipeId = result.lastID;
 
-  // Insérer les ingrédients
   for (const ingredient of recipe.Ingredients) {
     await db.run(
       'INSERT INTO ITEM_RECIPE (ID_Recipe, ID_Item, Position) VALUES (?, ?, ?)',
@@ -76,12 +71,10 @@ export async function createRecipe(recipe) {
     );
   }
 
-  // Récupérer les données complètes de la recette avec les ingrédients
   const recipeData = await db.get('SELECT * FROM RECIPE WHERE ID_Recipe = ?', [
     recipeId,
   ]);
 
-  // Récupérer les ingrédients avec leurs informations
   const ingredients = await db.all(
     `SELECT ir.ID_Item, ir.Position, i.Name, i.Image_Path 
      FROM ITEM_RECIPE ir
@@ -100,7 +93,6 @@ export async function createRecipe(recipe) {
 export async function updateRecipe(id, recipe) {
   const db = await openDb();
 
-  // Vérifier si la recette existe
   const existingRecipe = await db.get(
     'SELECT * FROM RECIPE WHERE ID_Recipe = ?',
     [id]
@@ -109,16 +101,13 @@ export async function updateRecipe(id, recipe) {
     return undefined;
   }
 
-  // Mettre à jour la recette
   await db.run('UPDATE RECIPE SET ID_Item_Result = ? WHERE ID_Recipe = ?', [
     recipe.ID_Item_Result,
     id,
   ]);
 
-  // Supprimer les anciens ingrédients
   await db.run('DELETE FROM ITEM_RECIPE WHERE ID_Recipe = ?', [id]);
 
-  // Ajouter les nouveaux ingrédients
   for (const ingredient of recipe.Ingredients) {
     await db.run(
       'INSERT INTO ITEM_RECIPE (ID_Recipe, ID_Item, Position) VALUES (?, ?, ?)',
