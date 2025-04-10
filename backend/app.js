@@ -5,6 +5,7 @@ import process from 'process';
 import userRouter from './src/routes/users.js';
 import inventoryRouter from './src/routes/inventory.js';
 import itemRouter from './src/routes/items.js';
+import recipeRouter from './src/routes/recipe.js';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/users', userRouter);
 app.use('/items', itemRouter);
 app.use('/inventory', inventoryRouter);
+app.use('/recipes', recipeRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
