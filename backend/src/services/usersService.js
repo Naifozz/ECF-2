@@ -1,6 +1,6 @@
 import * as userRepository from '../repositories/usersRepository.js';
 import * as inventoryRepository from '../repositories/inventoryRepository.js';
-import { validateUser } from '../models/usersModel.js';
+import { validateUser, hashPassword } from '../models/usersModel.js';
 export const getUsers = async () => {
   try {
     const users = await userRepository.getUsers();
@@ -30,10 +30,20 @@ export const createUser = async (data) => {
     if (!validation.isValid) {
       throw { status: 400, message: validation.errors };
     }
+
+    const existingUser = await userRepository.getUserByEmail(data.Email);
+    if (existingUser) {
+      throw { status: 400, message: 'Cet email est déjà utilisé' };
+    }
+
+    data.Password = await hashPassword(data.Password);
+
     const user = await userRepository.createUser(data);
 
     await inventoryRepository.createInventory(user.ID_User);
-    return user;
+
+    const { Password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   } catch (error) {
     console.error('Error creating user', error);
     throw error;
