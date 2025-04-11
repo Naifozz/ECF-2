@@ -14,7 +14,7 @@ const PUBLIC_DIR = join(__dirname, "public");
 app.use(express.static(PUBLIC_DIR));
 
 app.get("/", (req, res) => {
-  res.sendFile(join(PUBLIC_DIR, "index.html"));
+  res.sendFile(join(PUBLIC_DIR, "pages", "items.html"));
 });
 
 app.use((req, res) => {
