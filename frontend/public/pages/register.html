@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../css/register.css" />
+    <title>Inscription</title>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="register-container">
+        <div class="logo">
+          <img src="../images/logo.png" alt="logo" />
+        </div>
+
+        <div class="register-form">
+          <h1>Inscription</h1>
+          <form id="registerForm">
+            <div class="form-group">
+              <label for="pseudo">Pseudo</label>
+              <input type="text" id="pseudo" name="pseudo" placeholder="Votre pseudo" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Votre adresse email"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="password">Mot de passe</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Votre mot de passe"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirmer le mot de passe</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="Confirmez votre mot de passe"
+                required
+              />
+            </div>
+            <button type="submit" class="btn-register">S'inscrire</button>
+          </form>
+          <div class="register-footer">
+            <p>Vous avez déjà un compte? <a href="/pages/login.html">Se connecter</a></p>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="logo">
+          <img src="../images/logo.png" alt="logo" />
+        </div>
+        <div class="text-footer">
+          <p>© 2025 - Minecraft</p>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../js/register.js"></script>
+  </body>
+</html>
