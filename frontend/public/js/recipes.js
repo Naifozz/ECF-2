@@ -9,6 +9,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let editMode = false;
   let allItems = [];
+  let csrfToken = ""; // Variable pour stocker le token CSRF
+
+  // Récupérer le token CSRF
+  const fetchCsrfToken = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/csrf-token`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 200) {
+        const data = await response.json();
+        csrfToken = data.csrfToken;
+        console.log("Token CSRF récupéré");
+      } else {
+        console.error("Erreur lors de la récupération du token CSRF");
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+    }
+  };
 
   // Vérifier si l'utilisateur est connecté
   const checkAuth = async () => {
@@ -33,6 +54,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
+        headers: {
+          "X-CSRF-Token": csrfToken, // Inclure le token CSRF
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
 
@@ -154,20 +179,20 @@ document.addEventListener("DOMContentLoaded", () => {
       // Résultat de la recette
       const resultHTML = resultItem
         ? `<div class="recipe-result">
-            <img src="../${resultItem.Image_Path}" alt="${resultItem.Name}" class="recipe-result-img">
-            <h3>${resultItem.Name}</h3>
-          </div>`
+              <img src="../${resultItem.Image_Path}" alt="${resultItem.Name}" class="recipe-result-img">
+              <h3>${resultItem.Name}</h3>
+            </div>`
         : "";
 
       recipeCard.innerHTML = `
-          <h3>Recette #${recipe.ID_Recipe}</h3>
-          ${gridHTML}
-          ${resultHTML}
-          <div class="controls">
-            <button class="btn-edit" data-id="${recipe.ID_Recipe}">Modifier</button>
-            <button class="btn-delete" data-id="${recipe.ID_Recipe}">Supprimer</button>
-          </div>
-        `;
+            <h3>Recette #${recipe.ID_Recipe}</h3>
+            ${gridHTML}
+            ${resultHTML}
+            <div class="controls">
+              <button class="btn-edit" data-id="${recipe.ID_Recipe}">Modifier</button>
+              <button class="btn-delete" data-id="${recipe.ID_Recipe}">Supprimer</button>
+            </div>
+          `;
 
       recipesList.appendChild(recipeCard);
     });
@@ -222,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Correction ici: s'assurer que ingredients est bien envoyé comme un tableau
     const recipeData = {
       ID_Item_Result: parseInt(resultItemId),
-      ingredients: ingredients, // Utiliser 'ingredients' au lieu de 'Ingredients'
+      ingredients: ingredients,
     };
 
     try {
@@ -234,6 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken, // Inclure le token CSRF
           },
           credentials: "include",
           body: JSON.stringify(recipeData),
@@ -244,6 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken, // Inclure le token CSRF
           },
           credentials: "include",
           body: JSON.stringify(recipeData),
@@ -253,6 +280,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.status === 200 || response.status === 201) {
         resetForm();
         fetchRecipes();
+      } else if (response.status === 403) {
+        // Token CSRF expiré ou invalide
+        alert("Session expirée ou invalide. Veuillez actualiser la page.");
+        await fetchCsrfToken(); // Récupérer un nouveau token
       } else {
         const errorData = await response.json();
         alert(`Erreur: ${errorData.message || "Une erreur est survenue"}`);
@@ -268,6 +299,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch(`${API_BASE_URL}/recipes/ingredients/${recipeId}`, {
         method: "GET",
+        headers: {
+          "X-CSRF-Token": csrfToken,
+        },
         credentials: "include",
       });
 
@@ -302,11 +336,19 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}`, {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken, // Inclure le token CSRF
+          },
           credentials: "include",
         });
 
-        if (response.status === 200) {
+        if (response.status === 204) {
           fetchRecipes();
+        } else if (response.status === 403) {
+          // Token CSRF expiré ou invalide
+          alert("Session expirée ou invalide. Veuillez actualiser la page.");
+          await fetchCsrfToken(); // Récupérer un nouveau token
         } else {
           const errorData = await response.json();
           alert(`Erreur: ${errorData.message || "Une erreur est survenue"}`);
@@ -330,6 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialisation
   const init = async () => {
     await checkAuth();
+    await fetchCsrfToken(); // Récupérer le token CSRF avant tout
     await fetchItems();
     fetchRecipes();
 

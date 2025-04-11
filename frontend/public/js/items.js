@@ -7,8 +7,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnLogout = document.getElementById("btnLogout");
 
   let editMode = false;
+  let csrfToken = "";
 
-  // Vérifier si l'utilisateur est connecté
+  const fetchCsrfToken = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/csrf-token`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.status === 200) {
+        const data = await response.json();
+        csrfToken = data.csrfToken;
+        console.log("Token CSRF récupéré");
+      } else {
+        console.error("Erreur lors de la récupération du token CSRF");
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+    }
+  };
+
   const checkAuth = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
@@ -17,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.status !== 200) {
-        // Rediriger vers la page de connexion si non connecté
         window.location.href = "/pages/login.html";
       }
     } catch (error) {
@@ -31,6 +49,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
+        headers: {
+          "X-CSRF-Token": csrfToken,
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
 
@@ -42,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Récupérer tous les items
   const fetchItems = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/items`, {
@@ -61,7 +82,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Afficher les items
   const displayItems = (items) => {
     itemsList.innerHTML = "";
 
@@ -70,18 +90,17 @@ document.addEventListener("DOMContentLoaded", () => {
       itemCard.className = "item-card";
 
       itemCard.innerHTML = `
-          <img src="../${item.Image_Path}" alt="${item.Name}" class="item-image">
-          <h3>${item.Name}</h3>
-          <div class="controls">
-            <button class="btn-edit" data-id="${item.ID_Item}">Modifier</button>
-            <button class="btn-delete" data-id="${item.ID_Item}">Supprimer</button>
-          </div>
-        `;
+            <img src="../${item.Image_Path}" alt="${item.Name}" class="item-image">
+            <h3>${item.Name}</h3>
+            <div class="controls">
+              <button class="btn-edit" data-id="${item.ID_Item}">Modifier</button>
+              <button class="btn-delete" data-id="${item.ID_Item}">Supprimer</button>
+            </div>
+          `;
 
       itemsList.appendChild(itemCard);
     });
 
-    // Ajouter les écouteurs d'événements pour les boutons d'édition et de suppression
     document.querySelectorAll(".btn-edit").forEach((button) => {
       button.addEventListener("click", (e) => {
         const itemId = e.target.getAttribute("data-id");
@@ -97,7 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Ajouter ou mettre à jour un item
   const handleItemSubmit = async (e) => {
     e.preventDefault();
 
@@ -119,6 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
           },
           credentials: "include",
           body: JSON.stringify(itemData),
@@ -129,6 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
           },
           credentials: "include",
           body: JSON.stringify(itemData),
@@ -138,6 +158,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.status === 200 || response.status === 201) {
         resetForm();
         fetchItems();
+      } else if (response.status === 403) {
+        alert("Session expirée ou invalide. Veuillez actualiser la page.");
+        await fetchCsrfToken();
       } else {
         const errorData = await response.json();
         alert(`Erreur: ${errorData.message || "Une erreur est survenue"}`);
@@ -172,17 +195,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Supprimer un item
   const deleteItem = async (itemId) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cet item ?")) {
       try {
         const response = await fetch(`${API_BASE_URL}/items/${itemId}`, {
           method: "DELETE",
+          headers: {
+            "X-CSRF-Token": csrfToken,
+          },
           credentials: "include",
         });
 
         if (response.status === 200) {
           fetchItems();
+        } else if (response.status === 403) {
+          alert("Session expirée ou invalide. Veuillez actualiser la page.");
+          await fetchCsrfToken();
         } else {
           const errorData = await response.json();
           alert(`Erreur: ${errorData.message || "Une erreur est survenue"}`);
@@ -194,7 +222,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Réinitialiser le formulaire
   const resetForm = () => {
     itemForm.reset();
     document.getElementById("itemId").value = "";
@@ -203,9 +230,9 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCancel.style.display = "none";
   };
 
-  // Initialisation
   const init = async () => {
     await checkAuth();
+    await fetchCsrfToken();
     fetchItems();
 
     itemForm.addEventListener("submit", handleItemSubmit);
