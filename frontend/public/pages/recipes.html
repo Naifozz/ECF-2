@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/recipes.css" />
+    <title>Recette</title>
+  </head>
+  <body>
+    <div class="app-container">
+      <header>
+        <div class="logo">
+          <img src="../images/logo.png" alt="logo" />
+        </div>
+        <div class="nav-links">
+          <a href="items.html">Gestion des Items</a>
+          <a href="recipes.html" class="active">Gestion des Recettes</a>
+          <button id="btnLogout" class="btn-logout">Déconnexion</button>
+        </div>
+      </header>
+
+      <main>
+        <h1>Gestion des Recettes</h1>
+
+        <div class="form-container">
+          <h2 id="formTitle">Créer une nouvelle recette</h2>
+          <form id="recipeForm">
+            <input type="hidden" id="recipeId" value="" />
+
+            <div class="form-group">
+              <label>Ingrédients (Grille de craft)</label>
+              <div class="craft-grid" id="craftGrid">
+                <!-- 9 cellules pour les ingrédients -->
+                <select class="craft-cell" id="ingredient1" data-position="1"></select>
+                <select class="craft-cell" id="ingredient2" data-position="2"></select>
+                <select class="craft-cell" id="ingredient3" data-position="3"></select>
+                <select class="craft-cell" id="ingredient4" data-position="4"></select>
+                <select class="craft-cell" id="ingredient5" data-position="5"></select>
+                <select class="craft-cell" id="ingredient6" data-position="6"></select>
+                <select class="craft-cell" id="ingredient7" data-position="7"></select>
+                <select class="craft-cell" id="ingredient8" data-position="8"></select>
+                <select class="craft-cell" id="ingredient9" data-position="9"></select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="resultItem">Résultat</label>
+              <div class="craft-result">
+                <select id="resultItem" required></select>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-submit">Sauvegarder</button>
+              <button type="button" id="btnCancel" class="btn-cancel" style="display: none">
+                Annuler
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <h2>Liste des recettes</h2>
+        <div class="recipes-container" id="recipesList">
+          <!-- Les recettes seront affichées ici -->
+        </div>
+      </main>
+
+      <footer>
+        <div class="logo">
+          <img src="../images/logo.png" alt="logo" />
+        </div>
+        <div class="text-footer">
+          <p>© 2025 - Minecraft</p>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../js/recipes.js"></script>
+  </body>
+</html>

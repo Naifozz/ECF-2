@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Items</title>
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/items.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header>
+        <div class="logo">
+          <img src="../images/logo.png" alt="logo" />
+        </div>
+        <div class="nav-links">
+          <a href="items.html" class="active">Gestion des Items</a>
+          <a href="recipes.html">Gestion des Recettes</a>
+          <button id="btnLogout" class="btn-logout">Déconnexion</button>
+        </div>
+      </header>
+
+      <main>
+        <h1>Gestion des Items</h1>
+
+        <div class="form-container">
+          <h2 id="formTitle">Ajouter un nouvel item</h2>
+          <form id="itemForm">
+            <input type="hidden" id="itemId" value="" />
+            <div class="form-group">
+              <label for="itemName">Nom de l'item</label>
+              <input type="text" id="itemName" name="itemName" required />
+            </div>
+            <div class="form-group">
+              <label for="itemImage">Chemin de l'image</label>
+              <input
+                type="text"
+                id="itemImage"
+                name="itemImage"
+                required
+                placeholder="chemin/vers/image.png"
+              />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-submit">Sauvegarder</button>
+              <button type="button" id="btnCancel" class="btn-cancel" style="display: none">
+                Annuler
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <h2>Liste des items</h2>
+        <div class="items-container" id="itemsList">
+          <!-- Les items seront affichés ici -->
+        </div>
+      </main>
+
+      <footer>
+        <div class="logo">
+          <img src="../images/logo.png" alt="logo" />
+        </div>
+        <div class="text-footer">
+          <p>© 2025 - Minecraft</p>
+        </div>
+      </footer>
+    </div>
+
+    <script src="../js/items.js"></script>
+  </body>
+</html>
