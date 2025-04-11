@@ -11,7 +11,6 @@ export const login = async (req, res) => {
   try {
     const user = await authService.login(email, password);
 
-    // Stocker l'utilisateur dans la session
     req.session.user = user;
     req.session.isLoggedIn = true;
 
@@ -33,7 +32,6 @@ export const register = async (req, res) => {
   try {
     const user = await userService.createUser(req.body);
 
-    // Connecter automatiquement l'utilisateur après l'inscription
     req.session.user = user;
     req.session.isLoggedIn = true;
 
