@@ -6,6 +6,7 @@ export const isAuthenticated = (req) => {
   if (!authHeader) return false;
 
   const token = authHeader.split(' ')[1];
+  if (!token) return false;
   try {
     const payload = jwt.verify(token, SECRET_KEY);
     req.user = payload;
