@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const registerForm = document.getElementById("registerForm");
-  const API_BASE_URL = "http://localhost:5000";
+  const API_BASE_URL = "window.location.origin";
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -27,13 +27,16 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify(registerData),
       });
 
       if (response.status === 201) {
         const data = await response.json();
         console.log("Inscription réussie:", data);
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         alert("Inscription réussie! Vous êtes maintenant connecté.");
         window.location.href = "/pages/items.html";
       } else {
@@ -69,16 +72,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const checkAuthStatus = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: "GET",
-        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.status === 200) {
         window.location.href = "/pages/items.html";
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification de l'authentification:", error);
+      console.error(
+        "Erreur lors de la vérification de l'authentification:",
+        error
+      );
     }
   };
 

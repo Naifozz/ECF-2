@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE_URL = "http://localhost:5000";
+  const { API_BASE_URL, checkAuth, handleLogout, fetchWithAuth } =
+    window.authUtils;
   const recipeForm = document.getElementById("recipeForm");
   const recipesList = document.getElementById("recipesList");
   const formTitle = document.getElementById("formTitle");
@@ -9,72 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let editMode = false;
   let allItems = [];
-  let csrfToken = ""; // Variable pour stocker le token CSRF
 
-  // Récupérer le token CSRF
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/csrf-token`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (response.status === 200) {
-        const data = await response.json();
-        csrfToken = data.csrfToken;
-        console.log("Token CSRF récupéré");
-      } else {
-        console.error("Erreur lors de la récupération du token CSRF");
-      }
-    } catch (error) {
-      console.error("Erreur:", error);
-    }
-  };
-
-  // Vérifier si l'utilisateur est connecté
-  const checkAuth = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (response.status !== 200) {
-        // Rediriger vers la page de connexion si non connecté
-        window.location.href = "/pages/login.html";
-      }
-    } catch (error) {
-      console.error("Erreur lors de la vérification de l'authentification:", error);
-      window.location.href = "/pages/login.html";
-    }
-  };
-
-  // Déconnexion
-  const handleLogout = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        headers: {
-          "X-CSRF-Token": csrfToken, // Inclure le token CSRF
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-
-      if (response.status === 200) {
-        window.location.href = "/pages/login.html";
-      }
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion:", error);
-    }
-  };
-
-  // Récupérer tous les items pour les sélecteurs
   const fetchItems = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/items`, {
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/items`, {
         method: "GET",
-        credentials: "include",
       });
 
       if (response.status === 200) {
@@ -88,9 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Remplir les sélecteurs d'items
   const populateItemSelectors = () => {
-    // Ajouter l'option vide pour les ingrédients
     const ingredientSelectors = document.querySelectorAll(".craft-cell");
     ingredientSelectors.forEach((selector) => {
       selector.innerHTML = '<option value="">Aucun</option>';
@@ -103,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Remplir le sélecteur de résultat
-    resultItemSelect.innerHTML = '<option value="">Sélectionner un résultat</option>';
+    resultItemSelect.innerHTML =
+      '<option value="">Sélectionner un résultat</option>';
     allItems.forEach((item) => {
       const option = document.createElement("option");
       option.value = item.ID_Item;
@@ -113,13 +51,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Récupérer toutes les recettes
   const fetchRecipes = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/recipes/ingredients`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${API_BASE_URL}/api/recipes?ingredients=true`,
+        {
+          method: "GET",
+        }
+      );
 
       if (response.status === 200) {
         const recipes = await response.json();
@@ -134,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Afficher les recettes
   const displayRecipes = (recipes) => {
-    // Organiser les recettes par ID_Recipe
     const groupedRecipes = {};
     recipes.forEach((item) => {
       if (!groupedRecipes[item.ID_Recipe]) {
@@ -159,16 +97,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const recipeCard = document.createElement("div");
       recipeCard.className = "recipe-card";
 
-      // Trouver l'item résultat
-      const resultItem = allItems.find((item) => item.ID_Item === recipe.ID_Item_Result);
+      const resultItem = allItems.find(
+        (item) => item.ID_Item === recipe.ID_Item_Result
+      );
 
-      // Créer la grille de craft
       let gridHTML = '<div class="recipe-grid">';
       for (let pos = 1; pos <= 9; pos++) {
-        const ingredient = recipe.ingredients.find((ing) => ing.Position === pos);
+        const ingredient = recipe.ingredients.find(
+          (ing) => ing.Position === pos
+        );
         if (ingredient) {
           const itemImg =
-            allItems.find((item) => item.ID_Item === ingredient.ID_Item)?.Image_Path || "";
+            allItems.find((item) => item.ID_Item === ingredient.ID_Item)
+              ?.Image_Path || "";
           gridHTML += `<div class="recipe-grid-item"><img src="../${itemImg}" alt="${ingredient.Name}"></div>`;
         } else {
           gridHTML += '<div class="recipe-grid-item"></div>';
@@ -176,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       gridHTML += "</div>";
 
-      // Résultat de la recette
       const resultHTML = resultItem
         ? `<div class="recipe-result">
               <img src="../${resultItem.Image_Path}" alt="${resultItem.Name}" class="recipe-result-img">
@@ -197,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
       recipesList.appendChild(recipeCard);
     });
 
-    // Ajouter les écouteurs d'événements pour les boutons d'édition et de suppression
     document.querySelectorAll(".btn-edit").forEach((button) => {
       button.addEventListener("click", (e) => {
         const recipeId = e.target.getAttribute("data-id");
@@ -213,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // Ajouter ou mettre à jour une recette
   const handleRecipeSubmit = async (e) => {
     e.preventDefault();
 
@@ -244,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Correction ici: s'assurer que ingredients est bien envoyé comme un tableau
     const recipeData = {
       ID_Item_Result: parseInt(resultItemId),
       ingredients: ingredients,
@@ -252,27 +189,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       let response;
+      let url = `${API_BASE_URL}/api/recipes`;
 
       if (editMode) {
-        // Mettre à jour une recette existante
-        response = await fetch(`${API_BASE_URL}/recipes/${recipeId}`, {
+        url += `?id=${recipeId}`;
+        response = await fetchWithAuth(url, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken, // Inclure le token CSRF
-          },
-          credentials: "include",
           body: JSON.stringify(recipeData),
         });
       } else {
-        // Créer une nouvelle recette
-        response = await fetch(`${API_BASE_URL}/recipes`, {
+        response = await fetchWithAuth(url, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken, // Inclure le token CSRF
-          },
-          credentials: "include",
           body: JSON.stringify(recipeData),
         });
       }
@@ -280,10 +207,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.status === 200 || response.status === 201) {
         resetForm();
         fetchRecipes();
-      } else if (response.status === 403) {
-        // Token CSRF expiré ou invalide
-        alert("Session expirée ou invalide. Veuillez actualiser la page.");
-        await fetchCsrfToken(); // Récupérer un nouveau token
       } else {
         const errorData = await response.json();
         alert(`Erreur: ${errorData.message || "Une erreur est survenue"}`);
@@ -294,16 +217,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Éditer une recette
   const editRecipe = async (recipeId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/recipes/ingredients/${recipeId}`, {
-        method: "GET",
-        headers: {
-          "X-CSRF-Token": csrfToken,
-        },
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${API_BASE_URL}/api/recipes?id=${recipeId}&ingredients=true`,
+        {
+          method: "GET",
+        }
+      );
 
       if (response.status === 200) {
         const recipe = await response.json();
@@ -311,14 +232,13 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("recipeId").value = recipe.ID_Recipe;
         document.getElementById("resultItem").value = recipe.ID_Item_Result;
 
-        // Réinitialiser tous les sélecteurs d'ingrédients
         for (let pos = 1; pos <= 9; pos++) {
           document.getElementById(`ingredient${pos}`).value = "";
         }
 
-        // Remplir les sélecteurs d'ingrédients
         recipe.Ingredients.forEach((ingredient) => {
-          document.getElementById(`ingredient${ingredient.Position}`).value = ingredient.ID_Item;
+          document.getElementById(`ingredient${ingredient.Position}`).value =
+            ingredient.ID_Item;
         });
 
         editMode = true;
@@ -330,37 +250,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Supprimer une recette
   const deleteRecipe = async (recipeId) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette recette ?")) {
       try {
-        const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken, // Inclure le token CSRF
-          },
-          credentials: "include",
-        });
+        const response = await fetchWithAuth(
+          `${API_BASE_URL}/api/recipes?id=${recipeId}`,
+          {
+            method: "DELETE",
+          }
+        );
 
-        if (response.status === 204) {
+        if (response.status === 200) {
           fetchRecipes();
-        } else if (response.status === 403) {
-          // Token CSRF expiré ou invalide
-          alert("Session expirée ou invalide. Veuillez actualiser la page.");
-          await fetchCsrfToken(); // Récupérer un nouveau token
         } else {
           const errorData = await response.json();
           alert(`Erreur: ${errorData.message || "Une erreur est survenue"}`);
         }
       } catch (error) {
         console.error("Erreur:", error);
-        alert("Une erreur est survenue lors de la suppression");
+        alert("Une erreur is survenue lors de la suppression");
       }
     }
   };
 
-  // Réinitialiser le formulaire
   const resetForm = () => {
     recipeForm.reset();
     document.getElementById("recipeId").value = "";
@@ -369,10 +281,10 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCancel.style.display = "none";
   };
 
-  // Initialisation
   const init = async () => {
-    await checkAuth();
-    await fetchCsrfToken(); // Récupérer le token CSRF avant tout
+    const isAuth = await checkAuth();
+    if (!isAuth) return;
+
     await fetchItems();
     fetchRecipes();
 

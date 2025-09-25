@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
-  const API_BASE_URL = "http://localhost:5000";
+  const API_BASE_URL = window.location.origin;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -14,18 +14,21 @@ document.addEventListener("DOMContentLoaded", () => {
         password: password,
       };
 
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth?action=login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify(loginData),
       });
 
       if (response.status === 200) {
         const data = await response.json();
         console.log("Connexion réussie:", data);
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         window.location.href = "/pages/items.html";
       } else {
         let errorMessage = "Identifiants incorrects";
@@ -48,16 +51,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/api/auth`, {
         method: "GET",
-        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.status === 200) {
         window.location.href = "/pages/items.html";
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification de l'authentification:", error);
+      console.error(
+        "Erreur lors de la vérification de l'authentification:",
+        error
+      );
     }
   };
 
