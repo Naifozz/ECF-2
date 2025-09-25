@@ -14,13 +14,13 @@ export const validateRecipe = (data) => {
   } else if (data.ingredients.length === 0) {
     errors.push('La recette doit contenir au moins un ingrédient');
   } else {
-    // Vérifier les doublons de position
+    // Vérifier si deux items sont dans la même case
     const positions = data.ingredients.map((ing) => ing.Position);
     if (new Set(positions).size !== positions.length) {
       errors.push('Les positions des ingrédients doivent être uniques');
     }
 
-    // Vérifier chaque ingrédient
+    // Vérification de chaque ingrédient
     data.ingredients.forEach((ingredient, index) => {
       if (!ingredient.ID_Item) {
         errors.push(
