@@ -12,6 +12,10 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/", "dest": "/frontend/public/pages/login.html" }
+    { "src": "/", "dest": "/frontend/public/pages/items.html" },
+    { "src": "/items", "dest": "/frontend/public/pages/items.html" },
+    { "src": "/recipes", "dest": "/frontend/public/pages/recipes.html" },
+    { "src": "/register", "dest": "/frontend/public/pages/register.html" },
+    { "src": "/login", "dest": "/frontend/public/pages/login.html" }
   ]
 }
