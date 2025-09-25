@@ -5,6 +5,7 @@ export default function handler(req, res) {
   switch (method) {
     case "GET":
       if (query.userId) {
+        req.params = { userId: query.userId };
         return getInventoryByUserId(req, res);
       }
       return res.status(400).json({ error: "User ID is required" });

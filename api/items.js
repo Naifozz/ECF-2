@@ -9,6 +9,10 @@ import {
 export default function handler(req, res) {
   const { method, query } = req;
 
+  if (query.id) {
+    req.parmas = { id: query.id };
+  }
+
   switch (method) {
     case "GET":
       if (query.id) {

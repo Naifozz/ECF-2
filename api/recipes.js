@@ -11,6 +11,15 @@ import {
 export default function handler(req, res) {
   const { method, query } = req;
 
+  if (query.id) {
+    req.parmas = { id: query.id };
+  }
+
+  const next = (error) => {
+    console.error("Erreur API:", error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  };
+
   switch (method) {
     case "GET":
       if (query.id) {
