@@ -4,7 +4,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
-} from "../backend/controllers/usersController.js";
+} from "../backend/src/controllers/usersController.js";
 
 export default function handler(req, res) {
   const { method, query } = req;

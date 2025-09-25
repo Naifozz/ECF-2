@@ -6,7 +6,7 @@ import {
   createRecipe,
   updateRecipe,
   deleteRecipe,
-} from "../backend/controllers/recipesController.js";
+} from "../backend/src/controllers/recipesController.js";
 
 export default function handler(req, res) {
   const { method, query } = req;

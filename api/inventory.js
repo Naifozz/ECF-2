@@ -1,4 +1,4 @@
-import { getInventoryByUserId } from "../controllers/inventoryController.js";
+import { getInventoryByUserId } from "../backend/src/controllers/inventoryController.js";
 export default function handler(req, res) {
   const { method, query } = req;
 

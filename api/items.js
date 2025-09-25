@@ -4,7 +4,7 @@ import {
   createItem,
   updateItem,
   deleteItem,
-} from "../backend/controllers/itemsController.js";
+} from "../backend/src/controllers/itemsController.js";
 
 export default function handler(req, res) {
   const { method, query } = req;

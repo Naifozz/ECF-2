@@ -4,7 +4,7 @@ import {
   logout,
   getCurrentUser,
 } from "../backend/controllers/authController.js";
-import { isAuthenticated } from "../backend/middlewares/authMiddleware.js";
+import { isAuthenticated } from "../backend/src/middlewares/authMiddleware.js";
 
 export default function handler(req, res) {
   const { method, query } = req;
