@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("user", JSON.stringify(data.user));
 
         alert("Inscription réussie! Vous êtes maintenant connecté.");
-        window.location.href = "/pages/items.html";
+        window.location.href = "/items";
       } else {
         let errorMessage = "Erreur lors de l'inscription";
 
