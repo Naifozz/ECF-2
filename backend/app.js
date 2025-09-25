@@ -18,7 +18,7 @@ dotenv.config();
 
 const app = express();
 
-// Protection contre les attaques XSS via headers HTTP
+// Protection contre les attaques XSS
 app.use(helmet());
 
 // Protection contre les attaques par force brute
@@ -49,8 +49,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
-      httpOnly: true, // Empêche l'accès via JavaScript
-      sameSite: 'lax', // 'strict' peut causer des problèmes avec certains navigateurs, 'lax' est un bon compromis
+      httpOnly: true, // Empêche l'accès JavaScript
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
