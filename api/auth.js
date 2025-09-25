@@ -3,7 +3,7 @@ import {
   register,
   logout,
   getCurrentUser,
-} from "../backend/controllers/authController.js";
+} from "../backend/src/controllers/authController.js";
 import { isAuthenticated } from "../backend/src/middlewares/authMiddleware.js";
 
 export default function handler(req, res) {
