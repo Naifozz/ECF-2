@@ -23,7 +23,7 @@ const checkAuth = async () => {
     const token = getToken();
 
     if (!token) {
-      window.location.href = "/pages/login.html";
+      window.location.href = "/login";
       return false;
     }
 
@@ -36,7 +36,7 @@ const checkAuth = async () => {
 
     if (response.status !== 200) {
       clearAuth();
-      window.location.href = "/pages/login.html";
+      window.location.href = "/login";
       return false;
     }
 
@@ -47,7 +47,7 @@ const checkAuth = async () => {
       error
     );
     clearAuth();
-    window.location.href = "/pages/login.html";
+    window.location.href = "/login";
     return false;
   }
 };
@@ -67,11 +67,11 @@ const handleLogout = async () => {
     }
 
     clearAuth();
-    window.location.href = "/pages/login.html";
+    window.location.href = "/login";
   } catch (error) {
     console.error("Erreur lors de la déconnexion:", error);
     clearAuth();
-    window.location.href = "/pages/login.html";
+    window.location.href = "/login";
   }
 };
 
@@ -95,7 +95,7 @@ const fetchWithAuth = async (url, options = {}) => {
 
   if (response.status === 401) {
     clearAuth();
-    window.location.href = "/pages/login.html";
+    window.location.href = "/login";
     throw new Error("Session expirée");
   }
 
